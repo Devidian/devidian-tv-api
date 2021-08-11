@@ -1,5 +1,5 @@
-import { accountApp } from '@/user-account';
-import { ExtendedLogger } from '@/utils';
+import { accountApp } from '#/user-account';
+import { ExtendedLogger } from '#/utils';
 import { NextFunction, Request, Response } from 'express';
 import { Express } from 'express-serve-static-core';
 import { NotInitializedException } from '../errors';

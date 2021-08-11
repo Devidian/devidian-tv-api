@@ -7,17 +7,18 @@ import { first } from 'rxjs/operators';
 import { Server as IoServer, Server, Socket } from 'socket.io';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { APIController } from './app/controllers/app-api.controller';
-import { AppWebsocketController } from './app/controllers/app-websocket.controller';
+import { APIController, AppWebsocketController } from './core';
 import { mongoClient } from './utils';
 import { AppInfo, Environment, EnvVars, Logger } from './utils/without-mongo';
 import passport = require('passport');
 import exsession = require('express-session');
 import cookieParser = require('cookie-parser');
+
 const logger = new Logger('app');
 
-function bootstrapAPI(app: Express) {
+async function bootstrapAPI(app: Express) {
 	APIController.init(app);
+	await import('./channel');
 }
 
 function bootstrapWebSocket(ioServer: Server) {

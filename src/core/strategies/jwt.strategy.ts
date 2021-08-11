@@ -1,5 +1,5 @@
-import { UserAccountEntity, userAccountService } from '@/user-account';
-import { Environment, EnvVars } from '@/utils';
+import { UserAccountEntity, userAccountService } from '#/user-account';
+import { Environment, EnvVars } from '#/utils';
 import { ExtractJwt, Strategy, StrategyOptions } from 'passport-jwt';
 
 // Passport Strategies

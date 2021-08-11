@@ -1,5 +1,5 @@
 import express = require('express');
-import { authGuard } from '@/app/guards/auth.guard';
+import { authGuard } from '#/core/guards/auth.guard';
 import { accountController } from '../controllers/user-account.controller';
 import { databaseGuard } from '../guards/database.guard';
 

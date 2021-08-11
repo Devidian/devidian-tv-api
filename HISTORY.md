@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+## [0.3.0] - 2021-08-11
+### Added
+- new Stage in `Dockerfile` for caching dependencies
+- new Item `channel`
+### Changed
+- renamed `app` to `core` to solve conflicts with `app.ts` 
+
 ## [0.2.0] - 2021-08-02
 ### Added
 - `NotInitializedException`

@@ -1,4 +1,4 @@
-import { AppInfo, EntityFactory, Environment, ExtendedLogger, sendEmail } from '@/utils';
+import { AppInfo, EntityFactory, Environment, ExtendedLogger, sendEmail } from '#/utils';
 import { validate } from 'class-validator';
 import { readFileSync } from 'fs';
 import { UserAccountEntity } from '../entities/user-account.entity';

@@ -1,4 +1,4 @@
-import { UserAccountEntity, userAccountService } from '@/user-account';
+import { UserAccountEntity, userAccountService } from '#/user-account';
 import { Strategy as LocalStrategy } from 'passport-local';
 
 export const LocalDBStrategy = new LocalStrategy(async function (username: string, password: string, done: any) {

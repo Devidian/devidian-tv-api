@@ -1,5 +1,4 @@
-import { BaseEntity, MongoCollection } from '@/utils';
-import { Default } from '@/utils/decorators/default.decorator';
+import { BaseEntity, MongoCollection } from '#/utils';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsOptional, Length } from 'class-validator';
 import { hostname } from 'os';
@@ -22,7 +21,7 @@ export class UserAccountEntity extends BaseEntity {
 	country: string;
 
 	@Exclude({ toPlainOnly: true })
-	verification: VerificationEntity[] = [];
+	verification: VerificationEntity[];
 
 	@Expose({ groups: ['owner', 'admin'] })
 	steam: {
@@ -31,7 +30,7 @@ export class UserAccountEntity extends BaseEntity {
 		displayName: string;
 		photos: { value: string }[];
 		connectedOn: Date;
-	} | null = null;
+	};
 
 	/**
 	 * returns large medium or small image if available
