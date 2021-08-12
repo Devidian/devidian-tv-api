@@ -1,13 +1,13 @@
 'use strict';
 import cluster, { Worker } from 'cluster';
-import { Environment, EnvVars, Logger, Loglevel } from './utils/without-mongo';
+import { Environment, UtilEnvVars, Logger, Loglevel } from './utils/without-mongo';
 const logger = new Logger('app');
 
 process.title = cluster.isPrimary ? 'Master' : `Worker${cluster.worker.id}`;
 void logger.info(`Starting process`);
-void logger.info(`Loglevel <${Loglevel[Environment.getNumber(EnvVars.APP_LOG_LEVEL)]}>`);
-void logger.debug(`Log to database <${Environment.getBoolean(EnvVars.APP_LOG_DB)}>`);
-void logger.debug(`Log to websocket <${Environment.getBoolean(EnvVars.APP_LOG_WS)}>`);
+void logger.info(`Loglevel <${Loglevel[Environment.getNumber(UtilEnvVars.APP_LOG_LEVEL)]}>`);
+void logger.debug(`Log to database <${Environment.getBoolean(UtilEnvVars.APP_LOG_DB)}>`);
+void logger.debug(`Log to websocket <${Environment.getBoolean(UtilEnvVars.APP_LOG_WS)}>`);
 
 function createWorker(code?: number, signal?: string): Worker {
 	let c: Worker = null;

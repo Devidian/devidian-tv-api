@@ -1,14 +1,15 @@
 import { UserAccountEntity, userAccountService } from '#/user-account';
 import { userAccountRepository } from '#/user-account/repositories/user-account.repository';
-import { Environment, EnvVars } from '#/utils';
+import { Environment } from '#/utils';
 import { Strategy } from 'passport-steam';
+import { AppEnvVars } from '../enums/AppEnvVars';
 
 export const SteamOpenIDStrategy = new Strategy(
 	{
-		returnURL: Environment.getString(EnvVars.OID_STEAM_REDIRECT),
-		realm: Environment.getString(EnvVars.OID_REALM),
-		apiKey: Environment.getString(EnvVars.OID_STEAM_KEY),
-		profile: Environment.getString(EnvVars.OID_STEAM_KEY, '').length > 0,
+		returnURL: Environment.getString(AppEnvVars.OID_STEAM_REDIRECT),
+		realm: Environment.getString(AppEnvVars.OID_REALM),
+		apiKey: Environment.getString(AppEnvVars.OID_STEAM_KEY),
+		profile: Environment.getString(AppEnvVars.OID_STEAM_KEY, '').length > 0,
 	},
 	async (identifier: string, profile: SteamProfile, done: any) => {
 		if (!profile.id) {

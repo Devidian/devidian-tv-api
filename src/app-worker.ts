@@ -9,11 +9,12 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { APIController, AppWebsocketController } from './core';
 import { mongoClient } from './utils';
-import { AppInfo, Environment, EnvVars, Logger } from './utils/without-mongo';
+import { AppInfo, Environment, UtilEnvVars, Logger } from './utils/without-mongo';
 import passport = require('passport');
 import exsession = require('express-session');
 import cookieParser = require('cookie-parser');
 import { firstValueFrom } from 'rxjs';
+import { AppEnvVars } from './core/enums/AppEnvVars';
 
 const logger = new Logger('app');
 
@@ -83,16 +84,16 @@ export async function initWorker(): Promise<void> {
 	xpr.disable('x-powered-by');
 
 	const sessionOptions: exsession.SessionOptions = {
-		secret: Environment.getString(EnvVars.APP_SALT, 'd3f4ul7 5ecre7'),
+		secret: Environment.getString(UtilEnvVars.APP_SALT, 'd3f4ul7 5ecre7'),
 		saveUninitialized: true, // don't create session until something stored
 		resave: true, //don't save session if unmodified
 		store: MongoStore.create({
 			clientPromise: clientPromise,
-			dbName: Environment.getString(EnvVars.DB_NAME),
+			dbName: Environment.getString(AppEnvVars.DB_NAME),
 		}),
 		cookie: {
 			path: '/',
-			domain: Environment.getString(EnvVars.APP_COOKIE_DOMAIN),
+			domain: Environment.getString(AppEnvVars.APP_COOKIE_DOMAIN),
 			maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 		},
 	};
@@ -105,7 +106,7 @@ export async function initWorker(): Promise<void> {
 		}),
 	);
 	// xpr.options('*', cors());
-	xpr.use(cookieParser(Environment.getString(EnvVars.APP_SALT, 'd3f4ul7 5ecre7')));
+	xpr.use(cookieParser(Environment.getString(UtilEnvVars.APP_SALT, 'd3f4ul7 5ecre7')));
 	xpr.use(express.json());
 	xpr.use(exsession(sessionOptions));
 	xpr.use(passport.initialize());
@@ -127,7 +128,7 @@ export async function initWorker(): Promise<void> {
 
 	// Socket Server
 	const wrap = (middleware: any) => (socket: Socket, next: any) => middleware(socket.request, {}, next);
-	ioServer.use(wrap(cookieParser(Environment.getString(EnvVars.APP_SALT, 'd3f4ul7 5ecre7'))));
+	ioServer.use(wrap(cookieParser(Environment.getString(UtilEnvVars.APP_SALT, 'd3f4ul7 5ecre7'))));
 	// ioServer.use(wrap(exsession(sessionOptions)));
 	ioServer.use((socket: any, next) => {
 		const req = socket.request;
@@ -143,8 +144,8 @@ export async function initWorker(): Promise<void> {
 	ioServer.use(wrap(passport.initialize()));
 	ioServer.use(wrap(passport.session()));
 
-	const host = Environment.getString('HOST', '0.0.0.0');
-	let port = Environment.getNumber('PORT', 8090);
+	const host = Environment.getString(AppEnvVars.APP_HOST, '0.0.0.0');
+	let port = Environment.getNumber(AppEnvVars.APP_PORT, 8090);
 
 	server.on('error', (e) => {
 		void logger.error('app.initWorker', e?.message, `trying ${++port}`);

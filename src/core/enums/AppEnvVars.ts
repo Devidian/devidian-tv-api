@@ -1,0 +1,20 @@
+export enum AppEnvVars {
+	//  Database
+	DB_NAME = 'MONGODB_DB',
+	//  App settings
+	APP_COOKIE_DOMAIN = 'COOKIE_DOMAIN',
+	APP_HOST = 'HOST',
+	APP_PORT = 'PORT',
+	//  email settings
+	MAIL_FROM = 'MAIL_FROM',
+	// openId settings
+	OID_REALM = 'OID_REALM',
+	OID_STEAM_REDIRECT = 'OID_STEAM_REDIRECT',
+	OID_STEAM_KEY = 'OID_STEAM_KEY',
+	OID_STEAM_RETURN = 'OID_STEAM_RETURN',
+
+	// deprecated - move to database for translation
+	MAIL_SUBJECT_VERIFICATION = 'MAIL_SUBJECT_VERIFICATION',
+	MAIL_SUBJECT_WELCOME = 'MAIL_SUBJECT_WELCOME',
+	MAIL_SUBJECT_BETA = 'MAIL_SUBJECT_BETA',
+}

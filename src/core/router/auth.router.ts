@@ -1,9 +1,10 @@
 import express = require('express');
 import { UserAccountEntity, userAccountService } from '#/user-account';
-import { Environment, EnvVars } from '#/utils';
+import { Environment, UtilEnvVars } from '#/utils';
 import { RequestHandler } from 'express';
 import { sign } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
+import { AppEnvVars } from '../enums/AppEnvVars';
 import { authGuard } from '../guards/auth.guard';
 import { JWTStrategy } from '../strategies/jwt.strategy';
 import { LocalDBStrategy } from '../strategies/local-db.strategy';
@@ -37,7 +38,7 @@ const sendAccountHandler: RequestHandler = (req, res) => {
 	const user: UserAccountEntity = req.user as UserAccountEntity;
 	const plain = user.toPlain(['owner']);
 
-	const token = sign({ data: plain }, Environment.getString(EnvVars.APP_SALT, 'd3f4ul75a1tf0rjw7T0k3n'), {
+	const token = sign({ data: plain }, Environment.getString(UtilEnvVars.APP_SALT, 'd3f4ul75a1tf0rjw7T0k3n'), {
 		expiresIn: '7d',
 	});
 	res.setHeader('x-refresh-token', token);
@@ -65,10 +66,10 @@ app.get('/steam/return', passport.authenticate('steam'), (req, res) => {
 	const plain = user.toPlain(['owner']);
 
 	// Successful authentication, redirect home.
-	const jwt = sign({ data: plain }, Environment.getString(EnvVars.APP_SALT, 'd3f4ul75a1tf0rjw7T0k3n'), {
+	const jwt = sign({ data: plain }, Environment.getString(UtilEnvVars.APP_SALT, 'd3f4ul75a1tf0rjw7T0k3n'), {
 		expiresIn: '60s',
 	});
-	res.redirect(Environment.getString(EnvVars.OID_STEAM_RETURN, '') + `?jwt=${jwt}`);
+	res.redirect(Environment.getString(AppEnvVars.OID_STEAM_RETURN, '') + `?jwt=${jwt}`);
 });
 
 export const authRouter = app;

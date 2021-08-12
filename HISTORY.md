@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Added
+- Feature `FeatureFlags`
+### Changed
+- moved some enum values from (Util)EnvVars to AppEnvVars
+- `README.md` updated
 ## [0.4.0] - 2021-08-12
 ### Added
 - `prettier`

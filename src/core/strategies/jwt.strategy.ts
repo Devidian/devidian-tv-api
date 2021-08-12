@@ -1,5 +1,5 @@
 import { UserAccountEntity, userAccountService } from '#/user-account';
-import { Environment, EnvVars } from '#/utils';
+import { Environment, UtilEnvVars } from '#/utils';
 import { ExtractJwt, Strategy, StrategyOptions } from 'passport-jwt';
 
 // Passport Strategies
@@ -9,7 +9,7 @@ const jwtOptions: StrategyOptions = {
 	jsonWebTokenOptions: {
 		ignoreExpiration: false,
 	},
-	secretOrKey: Environment.getString(EnvVars.APP_SALT, 'd3f4ul75a1tf0rjw7T0k3n'),
+	secretOrKey: Environment.getString(UtilEnvVars.APP_SALT, 'd3f4ul75a1tf0rjw7T0k3n'),
 	algorithms: ['HS256'],
 };
 
