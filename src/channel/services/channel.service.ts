@@ -32,7 +32,8 @@ class ChannelService {
 			throw new ItemNotFoundException(`Channel with <id:${id}> not found`);
 		}
 
-		ch.streamKey = createHash('sha256').update(`${ch.id}:${Date.now()}:${new ObjectId().toHexString()}`).digest('hex');
+		const hashData = `${ch.id}:${Date.now()}:${new ObjectId().toHexString()}`;
+		ch.streamKey = createHash('sha256').update(hashData).digest('hex');
 
 		return this.repo.save(ch);
 	}

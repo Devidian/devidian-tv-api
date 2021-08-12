@@ -4,22 +4,24 @@ import { Environment, EnvVars, Logger, Loglevel } from './utils/without-mongo';
 const logger = new Logger('app');
 
 process.title = cluster.isPrimary ? 'Master' : `Worker${cluster.worker.id}`;
-logger.info(`Starting process`);
-logger.info(`Loglevel <${Loglevel[Environment.getNumber(EnvVars.APP_LOG_LEVEL)]}>`);
-logger.debug(`Log to database <${Environment.getBoolean(EnvVars.APP_LOG_DB)}>`);
-logger.debug(`Log to websocket <${Environment.getBoolean(EnvVars.APP_LOG_WS)}>`);
+void logger.info(`Starting process`);
+void logger.info(`Loglevel <${Loglevel[Environment.getNumber(EnvVars.APP_LOG_LEVEL)]}>`);
+void logger.debug(`Log to database <${Environment.getBoolean(EnvVars.APP_LOG_DB)}>`);
+void logger.debug(`Log to websocket <${Environment.getBoolean(EnvVars.APP_LOG_WS)}>`);
+
+function createWorker(code?: number, signal?: string): Worker {
+	let c: Worker = null;
+	if (c) {
+		void logger.error(`Worker <${c.id}> exited with code: <${code}> and signal <${signal}>`);
+		c.removeAllListeners();
+		c.destroy();
+	}
+	c = cluster.fork();
+	c.addListener('exit', createWorker);
+	return c;
+}
 
 if (cluster.isPrimary) {
-	let c: Worker = null;
-	function createWorker(code?: number, signal?: string) {
-		if (c) {
-			logger.error(`Worker <${c.id}> exited with code: <${code}> and signal <${signal}>`);
-			c.removeAllListeners();
-			c.destroy();
-		}
-		c = cluster.fork();
-		c.addListener('exit', createWorker);
-	}
 	createWorker();
 } else {
 	import('./app-worker')
@@ -27,6 +29,6 @@ if (cluster.isPrimary) {
 			return initWorker();
 		})
 		.catch((e) => {
-			logger.error(e.message);
+			void logger.error(e.message);
 		});
 }

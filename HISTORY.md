@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+## [0.4.0] - 2021-08-12
+### Added
+- `prettier`
+- eslint stuff
+- husky
+- lint-staged
+### Fixed
+- All files linted
+
 ## [0.3.0] - 2021-08-11
 ### Added
 - new Stage in `Dockerfile` for caching dependencies

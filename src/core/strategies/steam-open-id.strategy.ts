@@ -20,7 +20,8 @@ export const SteamOpenIDStrategy = new Strategy(
 		const user: UserAccountEntity | null = await userAccountService.findBySteamIdentifier(identifier);
 		if (!user) {
 			try {
-				let { id, displayName, photos } = profile;
+				const { id, photos } = profile;
+				let { displayName } = profile;
 				let nameCheck: UserAccountEntity = await userAccountService.findByName(displayName);
 				// to prevent duplicate names we look for a name with suffix #0000 - #9999 that is free
 				// in the future we may implement a form of tag like discord has but meanwhile we could just hide the suffix in the frontend if it exists

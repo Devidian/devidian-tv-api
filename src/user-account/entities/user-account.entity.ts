@@ -67,7 +67,7 @@ export class UserAccountEntity extends BaseEntity {
 		return MongoCollection.hash256(password) === this.password;
 	}
 
-	public setPassword(pw: string) {
+	public setPassword(pw: string): void {
 		if (!pw) return;
 		this.password = MongoCollection.hash256(pw);
 	}

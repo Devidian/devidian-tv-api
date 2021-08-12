@@ -13,10 +13,11 @@ import { AppInfo, Environment, EnvVars, Logger } from './utils/without-mongo';
 import passport = require('passport');
 import exsession = require('express-session');
 import cookieParser = require('cookie-parser');
+import { firstValueFrom } from 'rxjs';
 
 const logger = new Logger('app');
 
-async function bootstrapAPI(app: Express) {
+async function bootstrapAPI(app: Express): Promise<void> {
 	APIController.init(app);
 	await import('./channel');
 }
@@ -26,23 +27,19 @@ function bootstrapWebSocket(ioServer: Server) {
 }
 
 // https://github.com/nkzawa/socket.io-bundle/blob/master/lib/session.js
-function persist(fn: Function, req: Request) {
-	return function () {
-		// @ts-ignore
-		var self: any = this;
-		if (!req.session) return fn.apply(self, arguments);
-
-		var args = arguments;
+function persist(fn: Function, req: Request, ...args: unknown[]) {
+	return function (this: any) {
+		if (!req.session) return fn.apply(this, args);
 
 		req.session.resetMaxAge();
-		req.session.save(function (err) {
-			if (err) logger.error(err.stack);
-			fn.apply(self, args);
+		req.session.save((err) => {
+			if (err) void logger.error(err.stack);
+			fn.apply(this, args);
 		});
 	};
 }
 
-export async function initWorker() {
+export async function initWorker(): Promise<void> {
 	const clientPromise = mongoClient.pipe(first((f) => !!f)).toPromise();
 	const swaggerDefinition = {
 		openapi: '3.0.0',
@@ -76,7 +73,7 @@ export async function initWorker() {
 
 	const xpr = express();
 	const server: HttpServer = createServer(xpr);
-	const ioServer: IoServer = require('socket.io')(server, {
+	const ioServer: IoServer = new (await import('socket.io')).Server(server, {
 		cors: {
 			origin,
 			methods: ['GET', 'POST'],
@@ -114,7 +111,7 @@ export async function initWorker() {
 	xpr.use(passport.initialize());
 	xpr.use(passport.session());
 	xpr.use((err: Errback, req: Request, res: Response, next: NextFunction) => {
-		logger.error('Express error', err);
+		void logger.error('Express error', err);
 		res.status(500).end();
 	});
 	xpr.use('/api-docs', swaggerUi.serve);
@@ -133,8 +130,8 @@ export async function initWorker() {
 	ioServer.use(wrap(cookieParser(Environment.getString(EnvVars.APP_SALT, 'd3f4ul7 5ecre7'))));
 	// ioServer.use(wrap(exsession(sessionOptions)));
 	ioServer.use((socket: any, next) => {
-		var req = socket.request;
-		var res = req.res;
+		const req = socket.request;
+		const res = req.res;
 
 		req.originalUrl = req.originalUrl || req.url;
 
@@ -150,18 +147,18 @@ export async function initWorker() {
 	let port = Environment.getNumber('PORT', 8090);
 
 	server.on('error', (e) => {
-		logger.error('app.initWorker', e?.message, `trying ${++port}`);
+		void logger.error('app.initWorker', e?.message, `trying ${++port}`);
 		if (e.message.includes('EADDRINUSE')) {
 			server.listen(port);
 		}
 	});
 
-	await mongoClient.pipe(first((f) => !!f)).toPromise();
+	await firstValueFrom(mongoClient.pipe(first((f) => !!f)));
 
-	bootstrapAPI(xpr);
+	await bootstrapAPI(xpr);
 	bootstrapWebSocket(ioServer);
 
 	server.listen(port, host);
-	logger.info(`App Backend started. Version: ${await AppInfo.version()}`);
-	logger.info(`Server ready and listening on <${host}:${port}>`);
+	void logger.info(`App Backend started. Version: ${await AppInfo.version()}`);
+	void logger.info(`Server ready and listening on <${host}:${port}>`);
 }

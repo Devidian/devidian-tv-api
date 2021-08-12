@@ -64,7 +64,7 @@ class Controller {
 					.end();
 			} else if (user) {
 				try {
-					this.service.verifyEmail(user, token);
+					await this.service.verifyEmail(user, token);
 					res.send({ success: true }).end();
 				} catch (error) {
 					res

@@ -30,7 +30,7 @@ class Controller {
 
 	public update(): RequestHandler {
 		return async (req, res) => {
-			const input = req.body;
+			// const input = req.body;
 		};
 	}
 
@@ -53,35 +53,32 @@ class Controller {
 	protected async handleNotifyLive(res: Response, rtmpQuery: RtmpQuery) {
 		const channel: ChannelEntity = await this.service.findByStreamKey(rtmpQuery.streamKey);
 		if (!channel) {
-			this.logger.verbose(`Unknown <streamKey:${rtmpQuery.streamKey}`);
+			void this.logger.verbose(`Unknown <streamKey:${rtmpQuery.streamKey}`);
 			return res.status(401).end();
 		}
 		res.status(200).end();
 	}
 
-	protected async handleNotifyPushRedirect(res: Response, rtmpQuery: RtmpQuery) {
+	protected async handleNotifyPushRedirect(res: Response, rtmpQuery: RtmpQuery): Promise<void> {
 		const channel: ChannelEntity = await this.service.findByStreamKey(rtmpQuery.streamKey);
 		if (!channel) {
 			return res.status(401).end();
 		}
 
-		switch (rtmpQuery.tcurl.searchParams.get('target')) {
-			case 'transcode':
-				// TODO transcoder_ip aus db holen
-				const rHost = `rtmp://${Environment.getString('TRANSCODER_IP', '127.0.0.1')}:1935`;
-				return (
-					res
-						// TODO set transcoder type programmatic
-						.location(`${rHost}/${Environment.getString('TRANSCODER_TYPE', 'transcode169')}/` + channel.name)
-						.status(303)
-						.end()
-				);
-
-			default:
-				this.logger.verbose(`redirect -> ${rtmpQuery.tcurl.searchParams.get('target')}`);
-				res.status(200).end();
-				break;
+		const target = rtmpQuery.tcurl.searchParams.get('target');
+		if (target == 'transcode') {
+			// TODO transcoder_ip aus db holen
+			const rHost = `rtmp://${Environment.getString('TRANSCODER_IP', '127.0.0.1')}:1935`;
+			return (
+				res
+					// TODO set transcoder type programmatic
+					.location(`${rHost}/${Environment.getString('TRANSCODER_TYPE', 'transcode169')}/` + channel.name)
+					.status(303)
+					.end()
+			);
 		}
+		void this.logger.verbose(`redirect -> ${rtmpQuery.tcurl.searchParams.get('target')}`);
+		res.status(200).end();
 	}
 
 	protected handleNotifyHlsPublish(res: Response, rtmpQuery: RtmpQuery) {
@@ -90,7 +87,7 @@ class Controller {
 		if (validHLSPublisher.includes(rtmpQuery.addr)) {
 			res.status(200).end();
 		} else {
-			this.logger.warn(`handleNotifyHlsPublish -> invalid <ip: ${rtmpQuery.addr}>`);
+			void this.logger.warn(`handleNotifyHlsPublish -> invalid <ip: ${rtmpQuery.addr}>`);
 			res.status(403).end();
 		}
 	}
@@ -101,7 +98,7 @@ class Controller {
 		if (validTranscodePublisher.includes(rtmpQuery.addr)) {
 			res.status(200).end();
 		} else {
-			this.logger.warn(`handleNotifyTranscodePublish -> invalid <ip: ${rtmpQuery.addr}>`);
+			void this.logger.warn(`handleNotifyTranscodePublish -> invalid <ip: ${rtmpQuery.addr}>`);
 			res.status(403).end();
 		}
 	}
@@ -111,7 +108,7 @@ class Controller {
 			const rtmpQuery: RtmpQuery = EntityFactory.create(RtmpQuery, req.query);
 
 			if (rtmpQuery.call != 'publish') {
-				this.logger.verbose(`Unhandled rtmp query <call:${rtmpQuery.call}>`);
+				void this.logger.verbose(`Unhandled rtmp query <call:${rtmpQuery.call}>`);
 				return res.status(200).end();
 			}
 
@@ -132,7 +129,7 @@ class Controller {
 					return this.handleNotifyTranscodePublish(res, rtmpQuery);
 
 				default:
-					this.logger.verbose(`Unhandled rtmp query <app:${rtmpQuery.app}>`);
+					void this.logger.verbose(`Unhandled rtmp query <app:${rtmpQuery.app}>`);
 					break;
 			}
 			res.status(200).end();

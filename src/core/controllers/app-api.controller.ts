@@ -13,7 +13,7 @@ class AppAPIController {
 		this.app = app;
 		app.get('/', this.handleRoot());
 		app.use((req, res, next) => {
-			this.logger.verbose(`API call <${req.method}:${req.url}>`);
+			void this.logger.verbose(`API call <${req.method}:${req.url}>`);
 			next();
 		});
 		this.addRouter('/auth', authRouter); // auth related
@@ -22,7 +22,7 @@ class AppAPIController {
 
 	public addRouter(mountPoint: string, router: Express): void {
 		if (!this.app) throw new NotInitializedException('Please call init before using this method');
-		this.logger.debug(`mounting router ${mountPoint}`);
+		void this.logger.debug(`mounting router ${mountPoint}`);
 		this.app.use(mountPoint, router);
 	}
 

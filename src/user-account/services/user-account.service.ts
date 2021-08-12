@@ -53,7 +53,7 @@ class UserAccountService {
 		return this.repo.save(userAccount);
 	}
 
-	public verifyEmail(user: UserAccountEntity, token: string) {
+	public async verifyEmail(user: UserAccountEntity, token: string): Promise<void> {
 		const emailVerification = user.verification.find((v) => v.field == 'email');
 		if (!emailVerification) {
 			throw new Error('.TOKEN.NOTFOUND');
@@ -61,6 +61,7 @@ class UserAccountService {
 		if (!emailVerification.tokenValidUntil) {
 			throw new Error('.TOKEN.INVALID');
 		} else if (emailVerification?.tokenValidUntil?.getTime() < Date.now()) {
+			throw new Error('.TOKEN.EXPIRED');
 		}
 		if (!(emailVerification.token == token)) {
 			throw new Error('.TOKEN.UNEQUAL');
@@ -68,54 +69,47 @@ class UserAccountService {
 			emailVerification.verifiedOn = new Date();
 			delete emailVerification.token;
 			delete emailVerification.tokenValidUntil;
-			this.repo.save(user);
+			await this.repo.save(user);
 		}
 	}
 
-	public async createEmailVerification(user: UserAccountEntity) {
-		try {
-			if (!user.email) return this;
-			user.createVerificationToken('email');
-			// TEST send 'verification-email'
-			let body = readFileSync(AppInfo.cwd() + '/assets/templates/email.verification.html', {
-				encoding: 'utf-8',
-			}).replace('{{PH_TEST}}', 'Welcome');
-			await sendEmail(
-				Environment.getString('MAIL_FROM', 'readonly@example.com'),
-				user.email,
-				Environment.getString('MAIL_SUBJECT_VERIFICATION') || 'Email verification',
-				body,
-				'text/html',
-			);
-			return this;
-		} catch (error) {
-			throw error;
-		}
+	public async createEmailVerification(user: UserAccountEntity): Promise<UserAccountService> {
+		if (!user.email) return this;
+		user.createVerificationToken('email');
+		// TEST send 'verification-email'
+		const body = readFileSync(AppInfo.cwd() + '/assets/templates/email.verification.html', {
+			encoding: 'utf-8',
+		}).replace('{{PH_TEST}}', 'Welcome');
+		await sendEmail(
+			Environment.getString('MAIL_FROM', 'readonly@example.com'),
+			user.email,
+			Environment.getString('MAIL_SUBJECT_VERIFICATION') || 'Email verification',
+			body,
+			'text/html',
+		);
+		return this;
 	}
 
 	public async create(plain: Partial<UserAccountEntity>): Promise<UserAccountEntity | null> {
 		const user = EntityFactory.create(UserAccountEntity, plain);
 		user.createdOn = user.lastModifiedOn = new Date(); // just for validation, will be (re)set on save
-		try {
-			const errors = await validate(user);
-			if (errors.length) {
-				this.logger.exception(errors);
-				throw Object.assign(new Error('.VALIDATION.FAILED'), {
-					details: errors.map(({ property, constraints }) => ({ property, constraints })),
-				});
-			}
-		} catch (error) {
-			throw error;
+		const errors = await validate(user);
+		if (errors.length) {
+			void this.logger.exception(errors);
+			throw Object.assign(new Error('.VALIDATION.FAILED'), {
+				details: errors.map(({ property, constraints }) => ({ property, constraints })),
+			});
 		}
 		user.setPassword(user.password);
 		try {
-			if (this.repo.isReady) {
+			if (await this.repo.isReady) {
 				const newAccount = await this.repo.save(user);
 				// TODO insert real template and change placeholder
-				let body = readFileSync(AppInfo.cwd() + '/assets/templates/email.beta.html', { encoding: 'utf-8' }).replace(
-					'{{PH_USERNAME}}',
-					newAccount?.name + '',
-				);
+				// const templateFile = resolve(AppInfo.cwd(), 'assets', 'templates', 'email.beta.html');
+				// const body = readFileSync(templateFile, { encoding: 'utf-8' }).replace(
+				// 	'{{PH_USERNAME}}',
+				// 	newAccount?.name + '',
+				// );
 				// TODO setup email on registration correctly
 				// await sendEmail(
 				// 	Environment.getString('MAIL_FROM', 'readonly@example.com'),
@@ -137,10 +131,10 @@ class UserAccountService {
 				// Duplicate key
 				const [key] = Object.keys(error.keyValue);
 				const value = error.keyValue[key];
-				this.logger.warn(`Dupe registration tried: ${key} / ${value}`);
+				void this.logger.warn(`Dupe registration tried: ${key} / ${value}`);
 				throw new Error('.CREATE.DUPE.' + key.toUpperCase());
 			} else {
-				this.logger.error(error, error?.response?.body);
+				void this.logger.error(error, error?.response?.body);
 				throw error;
 			}
 		}

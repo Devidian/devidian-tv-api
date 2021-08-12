@@ -20,7 +20,7 @@ type JWTPayload = {
 };
 
 export const JWTStrategy = new Strategy(jwtOptions, async (jwtPayload: JWTPayload, done) => {
-	const { data: user, iat, exp } = jwtPayload;
+	const { data: user, exp } = jwtPayload;
 
 	const isExpired = exp * 1000 - Date.now() < 0;
 
