@@ -2,7 +2,7 @@ import { ExtendedLogger } from '#/utils';
 import { validate } from 'class-validator';
 import { RequestHandler } from 'express';
 import { UserAccountEntity } from '../entities/user-account.entity';
-import { I18nPrefix } from '../enums/i18nPrefix';
+import { I18n } from '../enums/i18n';
 import { userAccountService } from '../services/user-account.service';
 
 /**
@@ -28,7 +28,7 @@ class Controller {
 						const errShort = err.map(({ property, constraints }) => ({ property, constraints }));
 						res.status(400).send({
 							error: 'ERROR.VALIDATION.FAILED',
-							i18n: I18nPrefix.ERROR + '.VALIDATION.FAILED',
+							i18n: I18n.E_VALIDATION_FAILED,
 							details: errShort,
 						});
 					} else {
@@ -36,7 +36,7 @@ class Controller {
 					}
 				})
 				.catch((r: Error & { details: any }) => {
-					res.status(400).send({ error: r.message, i18n: I18nPrefix.ERROR + r.message, details: r.details });
+					res.status(400).send({ error: r.message, i18n: I18n.E_ + r.message, details: r.details });
 				})
 				.finally(() => {
 					res.end();
@@ -58,10 +58,7 @@ class Controller {
 			const { email, token } = req.body;
 			const user = await this.service.findByEmail(email);
 			if (!user) {
-				res
-					.status(400)
-					.send({ error: 'User not found', i18n: `${I18nPrefix.ERROR}.EMAILNOTFOUND` })
-					.end();
+				res.status(400).send({ error: 'User not found', i18n: I18n.E_EMAIL_NOT_FOUND }).end();
 			} else if (user) {
 				try {
 					await this.service.verifyEmail(user, token);
@@ -69,7 +66,7 @@ class Controller {
 				} catch (error) {
 					res
 						.status(400)
-						.send({ error: error.message, i18n: I18nPrefix.ERROR + error.message })
+						.send({ error: error.message, i18n: I18n.E_ + error.message })
 						.end();
 				}
 			}

@@ -31,17 +31,21 @@ class ChannelService {
 		if (!ch) {
 			throw new ItemNotFoundException(`Channel with <id:${id}> not found`);
 		}
-
-		const hashData = `${ch.id}:${Date.now()}:${new ObjectId().toHexString()}`;
-		ch.streamKey = createHash('sha256').update(hashData).digest('hex');
+		ch.streamKey = this.generateStreamKey(ch);
 
 		return this.repo.save(ch);
 	}
 
 	public create(user: UserAccountEntity, name: string): Promise<ChannelEntity> {
 		const channel = EntityFactory.create(ChannelEntity, { name, ownerId: user.id });
+		channel.streamKey = this.generateStreamKey(channel);
 
 		return this.repo.save(channel);
+	}
+
+	private generateStreamKey(ch: ChannelEntity) {
+		const hashData = `${ch.id}:${Date.now()}:${new ObjectId().toHexString()}`;
+		return createHash('sha256').update(hashData).digest('hex');
 	}
 }
 

@@ -1,9 +1,8 @@
 import { UserAccountEntity } from '#/user-account';
-import { EntityFactory, Environment, ExtendedLogger } from '#/utils';
+import { EntityFactory, Environment, ExtendedLogger, HttpStatusCodes } from '#/utils';
 import { RequestHandler, Response } from 'express';
 import { channelService } from '../services/channel.service';
-import { I18nPrefix } from '../enums/i18nPrefix';
-import { HttpStatus } from '#/core/enums/HttpStatusCodes';
+import { I18n } from '../enums/i18n';
 import { RtmpQuery } from '../dtos/rtmp-query.dto';
 import { ChannelEntity } from '../entities/channel.entity';
 import { NotifyAppType } from '../enums/notify-app-types';
@@ -41,8 +40,8 @@ class Controller {
 			const nameCheck = await this.service.findByName(input.name);
 			if (nameCheck) {
 				return res
-					.status(HttpStatus.BAD_REQUEST)
-					.send({ error: 'ChannelName must be unique', i18n: `${I18nPrefix.ERROR}.NOT_UNIQUE` })
+					.status(HttpStatusCodes.BAD_REQUEST)
+					.send({ error: 'ChannelName must be unique', i18n: I18n.E_NOT_UNIQUE })
 					.end();
 			}
 			const channel = await this.service.create(user, input.name);

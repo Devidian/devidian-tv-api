@@ -7,7 +7,7 @@ import { first } from 'rxjs/operators';
 import { Server as IoServer, Server, Socket } from 'socket.io';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { APIController, AppWebsocketController } from './core';
+import { APIController, AppWebsocketController, bootstrap } from './core';
 import { mongoClient } from './utils';
 import { AppInfo, Environment, UtilEnvVars, Logger } from './utils/without-mongo';
 import passport = require('passport');
@@ -17,11 +17,6 @@ import { firstValueFrom } from 'rxjs';
 import { AppEnvVars } from './core/enums/AppEnvVars';
 
 const logger = new Logger('app');
-
-async function bootstrapAPI(app: Express): Promise<void> {
-	APIController.init(app);
-	await import('./channel');
-}
 
 function bootstrapWebSocket(ioServer: Server) {
 	return new AppWebsocketController(ioServer, []);
@@ -156,7 +151,9 @@ export async function initWorker(): Promise<void> {
 
 	await firstValueFrom(mongoClient.pipe(first((f) => !!f)));
 
-	await bootstrapAPI(xpr);
+	await bootstrap(xpr, ioServer);
+	// Import modules here
+	await import('./channel');
 	bootstrapWebSocket(ioServer);
 
 	server.listen(port, host);

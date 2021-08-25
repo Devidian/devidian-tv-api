@@ -32,6 +32,13 @@ export class UserAccountEntity extends BaseEntity {
 		connectedOn: Date;
 	};
 
+	@Expose({ groups: ['owner', 'admin'] })
+	flags: Record<string, boolean>;
+
+	public get isAdmin(): boolean {
+		return this.flags['admin'] || false;
+	}
+
 	/**
 	 * returns large medium or small image if available
 	 *

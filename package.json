@@ -1,6 +1,6 @@
 {
 	"name": "devidian_tv_api",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"description": "Template for node (backend) node apps",
 	"main": "dist/app.js",
 	"repository": "git@github.com:Devidian/devidian-tv-api.git",

@@ -29,6 +29,6 @@ if (cluster.isPrimary) {
 			return initWorker();
 		})
 		.catch((e) => {
-			void logger.error(e.message);
+			void logger.error(e.message, e.stack);
 		});
 }

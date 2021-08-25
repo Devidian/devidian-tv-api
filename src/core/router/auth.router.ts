@@ -10,6 +10,7 @@ import { JWTStrategy } from '../strategies/jwt.strategy';
 import { LocalDBStrategy } from '../strategies/local-db.strategy';
 import { SteamOpenIDStrategy } from '../strategies/steam-open-id.strategy';
 import passport = require('passport');
+import { featureGuard } from '../guards/feature.guard';
 
 const app = express();
 app.disable('x-powered-by');
@@ -59,7 +60,7 @@ app.get('/logout', (req, res) => {
 	res.send({ success: true }).end();
 });
 
-app.get('/steam', passport.authenticate('steam'));
+app.get('/steam', featureGuard('steam-login'), passport.authenticate('steam'));
 
 app.get('/steam/return', passport.authenticate('steam'), (req, res) => {
 	const user: UserAccountEntity = req.user as UserAccountEntity;
